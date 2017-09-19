@@ -83,7 +83,7 @@ class DTN(object):
             self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
 
             # loss and train op
-            self.loss = slim.losses.sparse_softmax_cross_entropy(self.logits, self.labels)
+            self.loss = tf.losses.sparse_softmax_cross_entropy(self.logits, self.labels)
             self.optimizer = tf.train.AdamOptimizer(self.learning_rate) 
             self.train_op = slim.learning.create_train_op(self.loss, self.optimizer)
             
