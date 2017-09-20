@@ -104,10 +104,14 @@ class DTN(object):
             self.trg_images = tf.placeholder(tf.float32, [None, 32, 32, 1], 'mnist_images')
             
             # source domain (svhn to mnist)
-            self.fx = self.content_extractor(self.src_images)
-            self.fake_images = self.generator(self.fx)
-            self.logits = self.discriminator(self.fake_images)
-            self.fgfx = self.content_extractor(self.fake_images, reuse=True)
+            with tf.device('/gpu:0'):
+                self.fx = self.content_extractor(self.src_images)
+            with tf.device('/gpu:1'):
+                self.fake_images = self.generator(self.fx)
+            with tf.device('/gpu:2'):
+                self.logits = self.discriminator(self.fake_images)
+            with tf.device('/gpu:3'):
+                self.fgfx = self.content_extractor(self.fake_images, reuse=True)
 
             # loss
             self.d_loss_src = tf.losses.sigmoid_cross_entropy(self.logits, tf.zeros_like(self.logits))
@@ -141,10 +145,14 @@ class DTN(object):
                                                     sampled_images_summary])
             
             # target domain (mnist)
-            self.fx = self.content_extractor(self.trg_images, reuse=True)
-            self.reconst_images = self.generator(self.fx, reuse=True)
-            self.logits_fake = self.discriminator(self.reconst_images, reuse=True)
-            self.logits_real = self.discriminator(self.trg_images, reuse=True)
+            with tf.device('/gpu:0'):
+                self.fx = self.content_extractor(self.trg_images, reuse=True)
+            with tf.device('/gpu:1'):
+                self.reconst_images = self.generator(self.fx, reuse=True)
+            with tf.device('/gpu:2'):
+                self.logits_fake = self.discriminator(self.reconst_images, reuse=True)
+            with tf.device('/gpu:3'):
+                self.logits_real = self.discriminator(self.trg_images, reuse=True)
             
             # loss
             self.d_loss_fake_trg = tf.losses.sigmoid_cross_entropy(self.logits_fake, tf.zeros_like(self.logits_fake))
